@@ -6,12 +6,15 @@ const mongoose = require('mongoose')
 
 // 2.字义Schema(描述文档结构)
 const productSchema = new mongoose.Schema({
-  categoryId: {type: String, required: true}, // 所属分类的id
-  pCategoryId: {type: String, required: true}, // 所属分类的父分类id
-  name: {type: String, required: true}, // 名称
-  price: {type: Number, required: true}, // 价格
+  woId: {type: String, required: true}, // 所属分类的id
+  userId:{type: String, required: true},
+  createDate:{type:Number,required:true},
+  deadline:{type:Number,required:true},
+  parentId: {type: String, required: true}, // 所属分类的id
+  cost: {type: Number, required: true}, // 价格
+  address:{type:String,required:true},
   desc: {type: String},
-  status: {type: Number, default: 1}, // 商品状态: 1:在售, 2: 下架了
+  status: {type: Number, default: 0}, // 商品状态: 0:等待接收 1：接收 2：拒接  3：订单进行中   4 or 5：订单完成(不能操作)
   imgs: {type: Array, default: []}, // n个图片文件名的json字符串
   detail: {type: String}
 })

@@ -145,8 +145,8 @@ router.get('/manage/user/list', (req, res) => {
 
 // 添加分类
 router.post('/manage/category/add', (req, res) => {
-    const { categoryName, parentId } = req.body
-    CategoryModel.create({ name: categoryName, parentId: parentId || '0' })
+    const { categoryName, parentId,price } = req.body
+    CategoryModel.create({ name: categoryName, parentId: parentId || '0',price:price || 0 })
         .then(category => {
             res.send({ status: 0, data: category })
         })
@@ -171,8 +171,8 @@ router.get('/manage/category/list', (req, res) => {
 
 // 更新分类名称
 router.post('/manage/category/update', (req, res) => {
-    const { categoryId, categoryName } = req.body
-    CategoryModel.findOneAndUpdate({ _id: categoryId }, { name: categoryName })
+    const { categoryId, categoryName,price} = req.body
+    CategoryModel.findOneAndUpdate({ _id: categoryId }, { name: categoryName,price:price || 0 })
         .then(oldCategory => {
             res.send({ status: 0 })
         })
@@ -199,7 +199,6 @@ router.get('/manage/category/info', (req, res) => {
 // 添加产品
 router.post('/manage/product/add', (req, res) => {
     const product = req.body
-    console.log(req.body)
     ProductModel.create(product)
         .then(product => {
             res.send({ status: 0, data: product })
@@ -211,17 +210,29 @@ router.post('/manage/product/add', (req, res) => {
 })
 
 // 获取产品分页列表
-router.get('/manage/product/list', (req, res) => {
-    const { pageNum, pageSize } = req.query
-    ProductModel.find({})
+router.get('/manage/wo/list', (req, res) => {
+    const { parentId,userId } = req.query
+    ProductModel.find({parentId:parentId},{userId:userId})
         .then(products => {
-            res.send({ status: 0, data: pageFilter(products, pageNum, pageSize) })
+            res.send({ status: 0, data: products})
         })
         .catch(error => {
             console.error('获取商品列表异常', error)
             res.send({ status: 1, msg: '获取商品列表异常, 请重新尝试' })
         })
 })
+
+router.get('/manage/wo/all', (req, res) => {
+    const {pageNum, pageSize,userId} = req.query
+    ProductModel.find({userId:userId})
+      .then(products => {
+        res.send({status: 0, data: pageFilter(products, pageNum, pageSize)})
+      })
+      .catch(error => {
+        console.error('获取商品列表异常', error)
+        res.send({status: 1, msg: '获取商品列表异常, 请重新尝试'})
+      })
+  })
 
 // 搜索产品列表
 router.get('/manage/product/search', (req, res) => {
