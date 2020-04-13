@@ -12,7 +12,7 @@ const RoleModel = require('../models/RoleModel')
 
 // 得到路由器对象
 const router = express.Router()
-    // console.log('router', router)
+// console.log('router', router)
 
 // 指定需要过滤的属性
 const filter = { password: 0, __v: 0 }
@@ -21,7 +21,7 @@ const filter = { password: 0, __v: 0 }
 // 登陆
 router.post('/login', (req, res) => {
     const { username, password } = req.body
-        // 根据username和password查询数据库users, 如果没有, 返回提示错误的信息, 如果有, 返回登陆成功信息(包含user)
+    // 根据username和password查询数据库users, 如果没有, 返回提示错误的信息, 如果有, 返回登陆成功信息(包含user)
     UserModel.findOne({ username, password: md5(password) })
         .then(user => {
             if (user) { // 登陆成功
@@ -36,7 +36,7 @@ router.post('/login', (req, res) => {
                         })
                 } else {
                     user._doc.role = { menus: [] }
-                        // 返回登陆成功信息(包含user)
+                    // 返回登陆成功信息(包含user)
                     res.send({ status: 0, data: user })
                 }
 
@@ -54,18 +54,18 @@ router.post('/login', (req, res) => {
 router.post('/manage/user/add', (req, res) => {
     // 读取请求参数数据
     const { username, password } = req.body
-        // 处理: 判断用户是否已经存在, 如果存在, 返回提示错误的信息, 如果不存在, 保存
-        // 查询(根据username)
+    // 处理: 判断用户是否已经存在, 如果存在, 返回提示错误的信息, 如果不存在, 保存
+    // 查询(根据username)
     UserModel.findOne({ username })
         .then(user => {
             // 如果user有值(已存在)
             if (user) {
                 // 返回提示错误的信息
                 res.send({ status: 1, msg: '此用户已存在' })
-                return new Promise(() => {})
+                return new Promise(() => { })
             } else { // 没值(不存在)
                 // 保存
-                return UserModel.create({...req.body, password: md5(password || 'atguigu') })
+                return UserModel.create({ ...req.body, password: md5(password || 'atguigu') })
             }
         })
         .then(user => {
@@ -85,7 +85,7 @@ router.post('/manage/user/update', (req, res) => {
     UserModel.findOneAndUpdate({ _id: user._id }, user)
         .then(oldUser => {
             const data = Object.assign(oldUser, user)
-                // 返回
+            // 返回
             res.send({ status: 0, data })
         })
         .catch(error => {
@@ -145,8 +145,8 @@ router.get('/manage/user/list', (req, res) => {
 
 // 添加分类
 router.post('/manage/category/add', (req, res) => {
-    const { categoryName, parentId,price } = req.body
-    CategoryModel.create({ name: categoryName, parentId: parentId || '0',price:price || 0 })
+    const { categoryName, parentId, price } = req.body
+    CategoryModel.create({ name: categoryName, parentId: parentId || '0', price: price || 0 })
         .then(category => {
             res.send({ status: 0, data: category })
         })
@@ -171,8 +171,8 @@ router.get('/manage/category/list', (req, res) => {
 
 // 更新分类名称
 router.post('/manage/category/update', (req, res) => {
-    const { categoryId, categoryName,price} = req.body
-    CategoryModel.findOneAndUpdate({ _id: categoryId }, { name: categoryName,price:price || 0 })
+    const { categoryId, categoryName, price } = req.body
+    CategoryModel.findOneAndUpdate({ _id: categoryId }, { name: categoryName, price: price || 0 })
         .then(oldCategory => {
             res.send({ status: 0 })
         })
@@ -211,10 +211,10 @@ router.post('/manage/product/add', (req, res) => {
 
 // 获取产品分页列表
 router.get('/manage/wo/list', (req, res) => {
-    const { parentId,userId } = req.query
-    ProductModel.find({parentId:parentId},{userId:userId})
+    const { parentId, userId } = req.query
+    ProductModel.find({ parentId: parentId }, { userId: userId })
         .then(products => {
-            res.send({ status: 0, data: products})
+            res.send({ status: 0, data: products })
         })
         .catch(error => {
             console.error('获取商品列表异常', error)
@@ -223,16 +223,31 @@ router.get('/manage/wo/list', (req, res) => {
 })
 
 router.get('/manage/wo/all', (req, res) => {
-    const {pageNum, pageSize,userId} = req.query
-    ProductModel.find({userId:userId})
-      .then(products => {
-        res.send({status: 0, data: pageFilter(products, pageNum, pageSize)})
-      })
-      .catch(error => {
-        console.error('获取商品列表异常', error)
-        res.send({status: 1, msg: '获取商品列表异常, 请重新尝试'})
-      })
-  })
+    const { pageNum, pageSize, userId } = req.query
+    ProductModel.find({ userId: userId })
+        .then(products => {
+            res.send({ status: 0, data: pageFilter(products, pageNum, pageSize) })
+        })
+        .catch(error => {
+            console.error('获取商品列表异常', error)
+            res.send({ status: 1, msg: '获取商品列表异常, 请重新尝试' })
+        })
+})
+
+router.get('/manage/user/auth', (req, res) => {
+    const { role_id } = req;
+    RoleModel.findById(role_id, 'name').then(roleType => {
+        console.log('roleType ', roleType);
+        let hasAuth = false;
+        if (!roleType || roleType === '管理员') {
+            hasAuth = true;
+        }
+        res.send({ status: 0, hasAuth: hasAuth });
+    }).catch(error => {
+        res.send({ status: 1, msg: '获取用户角色失败，请重试' });
+    })
+})
+
 
 // 搜索产品列表
 router.get('/manage/product/search', (req, res) => {
@@ -312,7 +327,7 @@ router.post('/manage/role/update', (req, res) => {
     RoleModel.findOneAndUpdate({ _id: role._id }, role)
         .then(oldRole => {
             // console.log('---', oldRole._doc)
-            res.send({ status: 0, data: {...oldRole._doc, ...role } })
+            res.send({ status: 0, data: { ...oldRole._doc, ...role } })
         })
         .catch(error => {
             console.error('更新角色异常', error)

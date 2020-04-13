@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
   phone: String,
   email: String,
   create_time: {type: Number, default: Date.now},
-  role_id: String
+  role_id: String,
 })
 
 // 3. 定义Model(与集合对应, 可以操作集合)
