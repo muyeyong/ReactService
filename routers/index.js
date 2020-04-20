@@ -235,9 +235,8 @@ router.get('/manage/wo/all', (req, res) => {
 })
 
 router.get('/manage/user/auth', (req, res) => {
-    const { role_id } = req;
-    RoleModel.findById(role_id, 'name').then(roleType => {
-        console.log('roleType ', roleType);
+    const { roleId } = req.query;
+    RoleModel.findById(roleId, 'name').then(roleType => {
         let hasAuth = false;
         if (!roleType || roleType === '管理员') {
             hasAuth = true;
@@ -294,6 +293,13 @@ router.post('/manage/product/updateStatus', (req, res) => {
         })
 })
 
+router.post('/manage/wo/delete', (req, res) => {
+    const { woId } = req.body;
+    ProductModel.deleteOne({ _id: woId })
+        .then((doc) => {
+            res.send({ status: 0 })
+        })
+})
 
 // 添加角色
 router.post('/manage/role/add', (req, res) => {
