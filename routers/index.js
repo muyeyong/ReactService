@@ -249,21 +249,21 @@ router.get('/manage/user/auth', (req, res) => {
 
 
 // 搜索产品列表
-router.get('/manage/product/search', (req, res) => {
-    const { pageNum, pageSize, searchName, productName, productDesc } = req.query
+router.get('/manage/wo/search', (req, res) => {
+    const { pageNum, pageSize, woId, woDesc } = req.query
     let contition = {}
-    if (productName) {
-        contition = { name: new RegExp(`^.*${productName}.*$`) }
-    } else if (productDesc) {
-        contition = { desc: new RegExp(`^.*${productDesc}.*$`) }
+    if (woId) {
+        contition = { woId: new RegExp(`^.*${woId}.*$`) }
+    } else if (woDesc) {
+        contition = { desc: new RegExp(`^.*${woDesc}.*$`) }
     }
     ProductModel.find(contition)
-        .then(products => {
-            res.send({ status: 0, data: pageFilter(products, pageNum, pageSize) })
+        .then(wos => {
+            res.send({ status: 0, data: pageFilter(wos, pageNum, pageSize) })
         })
         .catch(error => {
             console.error('搜索商品列表异常', error)
-            res.send({ status: 1, msg: '搜索商品列表异常, 请重新尝试' })
+            res.send({ status: 1, msg: '搜索订单列表异常, 请重新尝试' })
         })
 })
 
@@ -280,16 +280,16 @@ router.post('/manage/product/update', (req, res) => {
         })
 })
 
-// 更新产品状态(上架/下架)
-router.post('/manage/product/updateStatus', (req, res) => {
-    const { productId, status } = req.body
-    ProductModel.findOneAndUpdate({ _id: productId }, { status })
+// 更新订单状态
+router.post('/manage/wo/updateStatus', (req, res) => {
+    const { woId, status } = req.body
+    ProductModel.findOneAndUpdate({ _id: woId }, { status })
         .then(oldProduct => {
             res.send({ status: 0 })
         })
         .catch(error => {
-            console.error('更新产品状态异常', error)
-            res.send({ status: 1, msg: '更新产品状态异常, 请重新尝试' })
+            console.error('更新订单状态异常', error)
+            res.send({ status: 1, msg: '更新订单状态异常, 请重新尝试' })
         })
 })
 
