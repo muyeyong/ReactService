@@ -217,8 +217,8 @@ router.get('/manage/wo/list', (req, res) => {
             res.send({ status: 0, data: products })
         })
         .catch(error => {
-            console.error('获取商品列表异常', error)
-            res.send({ status: 1, msg: '获取商品列表异常, 请重新尝试' })
+            console.error('获取订单列表异常', error)
+            res.send({ status: 1, msg: '获取订单列表异常, 请重新尝试' })
         })
 })
 
@@ -229,8 +229,8 @@ router.get('/manage/wo/all', (req, res) => {
             res.send({ status: 0, data: pageFilter(products, pageNum, pageSize) })
         })
         .catch(error => {
-            console.error('获取商品列表异常', error)
-            res.send({ status: 1, msg: '获取商品列表异常, 请重新尝试' })
+            console.error('获取订单列表异常', error)
+            res.send({ status: 1, msg: '获取订单列表异常, 请重新尝试' })
         })
 })
 
@@ -262,7 +262,7 @@ router.get('/manage/wo/search', (req, res) => {
             res.send({ status: 0, data: pageFilter(wos, pageNum, pageSize) })
         })
         .catch(error => {
-            console.error('搜索商品列表异常', error)
+            console.error('搜索订单列表异常', error)
             res.send({ status: 1, msg: '搜索订单列表异常, 请重新尝试' })
         })
 })
@@ -275,8 +275,8 @@ router.post('/manage/product/update', (req, res) => {
             res.send({ status: 0 })
         })
         .catch(error => {
-            console.error('更新商品异常', error)
-            res.send({ status: 1, msg: '更新商品名称异常, 请重新尝试' })
+            console.error('更新订单异常', error)
+            res.send({ status: 1, msg: '更新订单名称异常, 请重新尝试' })
         })
 })
 
