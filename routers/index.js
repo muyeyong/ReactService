@@ -196,7 +196,7 @@ router.get('/manage/category/info', (req, res) => {
 })
 
 
-// 添加产品
+// 添加订单
 router.post('/manage/product/add', (req, res) => {
     const product = req.body
     ProductModel.create(product)
@@ -204,12 +204,12 @@ router.post('/manage/product/add', (req, res) => {
             res.send({ status: 0, data: product })
         })
         .catch(error => {
-            console.error('添加产品异常', error)
-            res.send({ status: 1, msg: '添加产品异常, 请重新尝试' })
+            console.error('添加订单异常', error)
+            res.send({ status: 1, msg: '添加订单异常, 请重新尝试' })
         })
 })
 
-// 获取产品分页列表
+// 获取订单分页列表
 router.get('/manage/wo/list', (req, res) => {
     const { parentId, userId } = req.query
     ProductModel.find({ parentId: parentId }, { userId: userId })
@@ -234,6 +234,15 @@ router.get('/manage/wo/all', (req, res) => {
         })
 })
 
+router.get('/manage/wo/one', (req, res) => {
+    const { _id } = req.query;
+    ProductModel.findById(_id).then(data => {
+        res.send({ status: 0, data: data })
+    }).catch(err => {
+        res.send({ status: 1, msg: '出了点问题，请稍后再试' })
+    })
+})
+
 router.get('/manage/user/auth', (req, res) => {
     const { roleId } = req.query;
     RoleModel.findById(roleId, 'name').then(roleType => {
@@ -248,14 +257,14 @@ router.get('/manage/user/auth', (req, res) => {
 })
 
 
-// 搜索产品列表
+// 搜索订单列表
 router.get('/manage/wo/search', (req, res) => {
     const { pageNum, pageSize, woId, woDesc } = req.query
     let contition = {}
     if (woId) {
         contition = { woId: new RegExp(`^.*${woId}.*$`) }
     } else if (woDesc) {
-        contition = { desc: new RegExp(`^.*${woDesc}.*$`) }
+        contition = { detail: new RegExp(`^.*${woDesc}.*$`) }
     }
     ProductModel.find(contition)
         .then(wos => {
@@ -267,7 +276,7 @@ router.get('/manage/wo/search', (req, res) => {
         })
 })
 
-// 更新产品
+// 更新订单
 router.post('/manage/product/update', (req, res) => {
     const product = req.body
     ProductModel.findOneAndUpdate({ _id: product._id }, product)
