@@ -195,6 +195,16 @@ router.get('/manage/category/info', (req, res) => {
         })
 })
 
+// router.get('/manage/catagory/list', (req, res) => {
+//     const { parentId } = req.query;
+//     console.log(parentId, typeof parentId)
+//     CategoryModel.find({ parentId: parentId }, data => {
+//         res.send({ status: 0, data: data })
+//     }).catch(err => {
+//         console.log(err)
+//         res.send({ status: 1, msg: '出错啦' })
+//     })
+// })
 
 // 添加订单
 router.post('/manage/product/add', (req, res) => {
@@ -241,6 +251,22 @@ router.get('/manage/wo/one', (req, res) => {
     }).catch(err => {
         res.send({ status: 1, msg: '出了点问题，请稍后再试' })
     })
+})
+
+router.get('/manage/wo/count', (req, res) => {
+    const { parentIds } = req.query;
+    let ids = JSON.parse(parentIds)
+    let result = [];
+    ids.forEach(async parentId => {
+        await ProductModel.find({ parentId }).then(data => {
+            console.log(data.length)
+            result.push(data.length);
+        }).catch(err => {
+            console.log(err)
+            res.send({ status: 1, msg: '出错啦' })
+        })
+    })
+    res.send({ status: 0, data: result })
 })
 
 router.get('/manage/user/auth', (req, res) => {
