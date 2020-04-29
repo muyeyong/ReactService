@@ -3,6 +3,7 @@
  */
 const express = require('express')
 const md5 = require('blueimp-md5')
+var async = require('async')
 
 const UserModel = require('../models/UserModel')
 const CategoryModel = require('../models/CategoryModel')
@@ -257,16 +258,18 @@ router.get('/manage/wo/count', (req, res) => {
     const { parentIds } = req.query;
     let ids = JSON.parse(parentIds)
     let result = [];
-    ids.forEach(async parentId => {
-        await ProductModel.find({ parentId }).then(data => {
-            console.log(data.length)
-            result.push(data.length);
+    async.eachSeries(ids, function (item, callback) {
+        ProductModel.find({ parentId: item }).then(data => {
+            result.push(data.length)
+            callback(null, item);
         }).catch(err => {
             console.log(err)
             res.send({ status: 1, msg: '出错啦' })
         })
-    })
-    res.send({ status: 0, data: result })
+
+    }, function (err) {
+        if (!err) res.send({ status: 0, data: result })
+    });
 })
 
 router.get('/manage/user/auth', (req, res) => {
