@@ -235,7 +235,7 @@ router.get('/manage/wo/list', (req, res) => {
 
 router.get('/manage/wo/all', (req, res) => {
     const { pageNum, pageSize, userId } = req.query
-    ProductModel.find({ userId: userId })
+    ProductModel.find({ $or: [{ userId: userId }, { serviceStaffId: userId }] })
         .then(products => {
             res.send({ status: 0, data: pageFilter(products, pageNum, pageSize) })
         })
