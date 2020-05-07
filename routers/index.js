@@ -235,14 +235,29 @@ router.get('/manage/wo/list', (req, res) => {
 
 router.get('/manage/wo/all', (req, res) => {
     const { pageNum, pageSize, userId } = req.query
-    ProductModel.find({ $or: [{ userId: userId }, { serviceStaffId: userId }] })
-        .then(products => {
-            res.send({ status: 0, data: pageFilter(products, pageNum, pageSize) })
-        })
-        .catch(error => {
-            console.error('获取订单列表异常', error)
-            res.send({ status: 1, msg: '获取订单列表异常, 请重新尝试' })
-        })
+    UserModel.findById(userId).then(data => {
+        console.log('user  ', data)
+        if (data.username === 'admin') {
+            ProductModel.find()
+                .then(products => {
+                    res.send({ status: 0, data: pageFilter(products, pageNum, pageSize) })
+                })
+                .catch(error => {
+                    console.error('获取订单列表异常', error)
+                    res.send({ status: 1, msg: '获取订单列表异常, 请重新尝试' })
+                })
+        } else {
+            ProductModel.find({ $or: [{ userId: userId }, { serviceStaffId: userId }] })
+                .then(products => {
+                    res.send({ status: 0, data: pageFilter(products, pageNum, pageSize) })
+                })
+                .catch(error => {
+                    console.error('获取订单列表异常', error)
+                    res.send({ status: 1, msg: '获取订单列表异常, 请重新尝试' })
+                })
+        }
+    })
+
 })
 
 router.get('/manage/wo/one', (req, res) => {
@@ -270,6 +285,15 @@ router.get('/manage/wo/count', (req, res) => {
     }, function (err) {
         if (!err) res.send({ status: 0, data: result })
     });
+})
+
+router.get('/manage/wo/serviceWo', (req, res) => {
+    ProductModel.find({ status: 1 }).then(data => {
+        res.send({ status: 0, data: data })
+    }).catch(err => {
+        console.log(err)
+        res.send({ status: 1, msg: '出错啦' })
+    })
 })
 
 router.get('/manage/user/auth', (req, res) => {
