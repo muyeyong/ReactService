@@ -288,8 +288,9 @@ router.get('/manage/wo/count', (req, res) => {
 })
 
 router.get('/manage/wo/serviceWo', (req, res) => {
-    ProductModel.find({ status: 1 }).then(data => {
-        res.send({ status: 0, data: data })
+    const { pageNum, pageSize } = req.query
+    ProductModel.find({ status: 1, deadline: { $gt: Date.now() } }).then(data => {
+        res.send({ status: 0, data: pageFilter(data, pageNum, pageSize) })
     }).catch(err => {
         console.log(err)
         res.send({ status: 1, msg: '出错啦' })
@@ -329,6 +330,24 @@ router.get('/manage/wo/search', (req, res) => {
         })
 })
 
+//搜索待服务的订单
+router.get('/manage/wo/searchServiceWo', (req, res) => {
+    const { pageNum, pageSize, address, serviceName } = req.query
+    let contition = {}
+    if (address) {
+        contition = { address: new RegExp(`^.*${address}.*$`), status: 1, deadline: { $gt: Date.now() } }
+    } else if (serviceName) {
+        contition = { detail: new RegExp(`^.*${serviceName}.*$`), status: 1, deadline: { $gt: Date.now() } }
+    }
+    ProductModel.find(contition)
+        .then(wos => {
+            res.send({ status: 0, data: pageFilter(wos, pageNum, pageSize) })
+        })
+        .catch(error => {
+            console.error('搜索订单列表异常', error)
+            res.send({ status: 1, msg: '搜索订单列表异常, 请重新尝试' })
+        })
+})
 // 更新订单
 router.post('/manage/product/update', (req, res) => {
     const product = req.body
@@ -344,8 +363,8 @@ router.post('/manage/product/update', (req, res) => {
 
 // 更新订单状态
 router.post('/manage/wo/updateStatus', (req, res) => {
-    const { woId, status } = req.body
-    ProductModel.findOneAndUpdate({ _id: woId }, { status })
+    const { woId, status, serviceStaffId } = req.body
+    ProductModel.findOneAndUpdate({ _id: woId }, { status, serviceStaffId })
         .then(oldProduct => {
             res.send({ status: 0 })
         })
