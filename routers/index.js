@@ -270,21 +270,44 @@ router.get('/manage/wo/one', (req, res) => {
 })
 
 router.get('/manage/wo/count', (req, res) => {
-    const { parentIds } = req.query;
+    const { parentIds, roleId, userId } = req.query;
     let ids = JSON.parse(parentIds)
     let result = [];
-    async.eachSeries(ids, function (item, callback) {
-        ProductModel.find({ parentId: item }).then(data => {
-            result.push(data.length)
-            callback(null, item);
-        }).catch(err => {
-            console.log(err)
-            res.send({ status: 1, msg: '出错啦' })
-        })
+    RoleModel.findById(roleId, 'name').then(roleType => {
+        if (!roleType || roleType === '管理员') {
 
-    }, function (err) {
-        if (!err) res.send({ status: 0, data: result })
-    });
+            async.eachSeries(ids, function (item, callback) {
+                ProductModel.find({ parentId: item }).then(data => {
+                    result.push(data.length)
+                    callback(null, item);
+                }).catch(err => {
+                    console.log(err)
+                    res.send({ status: 1, msg: '出错啦' })
+                })
+
+            }, function (err) {
+                if (!err) res.send({ status: 0, data: result })
+            });
+        } else {
+            async.eachSeries(ids, function (item, callback) {
+                ProductModel.find({ parentId: item, userId: userId }).then(data => {
+                    result.push(data.length)
+                    callback(null, item);
+                }).catch(err => {
+                    console.log(err)
+                    res.send({ status: 1, msg: '出错啦' })
+                })
+
+            }, function (err) {
+                if (!err) res.send({ status: 0, data: result })
+            });
+        }
+
+    }).catch(error => {
+        res.send({ status: 1, msg: '请稍后尝试' });
+    })
+
+
 })
 
 router.get('/manage/wo/serviceWo', (req, res) => {
@@ -337,7 +360,7 @@ router.get('/manage/wo/searchServiceWo', (req, res) => {
     if (address) {
         contition = { address: new RegExp(`^.*${address}.*$`), status: 1, deadline: { $gt: Date.now() } }
     } else if (serviceName) {
-        contition = { detail: new RegExp(`^.*${serviceName}.*$`), status: 1, deadline: { $gt: Date.now() } }
+        contition = { serviceName: new RegExp(`^.*${serviceName}.*$`), status: 1, deadline: { $gt: Date.now() } }
     }
     ProductModel.find(contition)
         .then(wos => {
@@ -364,7 +387,13 @@ router.post('/manage/product/update', (req, res) => {
 // 更新订单状态
 router.post('/manage/wo/updateStatus', (req, res) => {
     const { woId, status, serviceStaffId } = req.body
-    ProductModel.findOneAndUpdate({ _id: woId }, { status, serviceStaffId })
+    let content;
+    if (!serviceStaffId) {
+        content = { status }
+    } else {
+        content = { status, serviceStaffId }
+    }
+    ProductModel.findOneAndUpdate({ _id: woId }, content)
         .then(oldProduct => {
             res.send({ status: 0 })
         })
@@ -374,6 +403,96 @@ router.post('/manage/wo/updateStatus', (req, res) => {
         })
 })
 
+//按月份查询订单
+router.get('/manage/wo/monthData', (req, res) => {
+    const { roleId, userId } = req.query;
+    RoleModel.findById(roleId, 'name').then(roleType => {
+
+        if (!roleType || roleType === '管理员') {
+            ProductModel.aggregate([
+                {
+                    $group: {
+                        _id: {
+                            date: {
+                                $month: {
+
+                                    date: {
+                                        '$add': [
+                                            new Date(0),
+                                            '$createDate'
+                                        ]
+                                    }
+                                }
+                            },
+                            'name': '$serviceName',
+                        },
+                        count: { $sum: 1 }
+                    }
+                }, {
+                    $group: {
+                        _id: '$_id.date',
+                        name: {
+                            $push: {
+                                name: "$_id.name",
+                                count: "$count"
+                            }
+                        }
+                    }
+                }
+            ]).then(data => {
+                res.send({ status: 0, data: data })
+            }).catch(err => {
+                console.log(err)
+                res.send({ statu: 1, msg: '请稍后再试' })
+            })
+        } else {
+            ProductModel.aggregate([
+                { $match: { userId } },
+                {
+                    $group: {
+                        _id: {
+                            date: {
+                                $month: {
+
+                                    date: {
+                                        '$add': [
+                                            new Date(0),
+                                            '$createDate'
+                                        ]
+                                    }
+                                }
+                            },
+                            'name': '$serviceName',
+                        },
+                        count: { $sum: 1 }
+                    }
+                }, {
+                    $group: {
+                        _id: '$_id.date',
+                        name: {
+                            $push: {
+                                name: "$_id.name",
+                                count: "$count"
+                            }
+                        }
+                    }
+                }
+            ]).then(data => {
+                res.send({ status: 0, data: data })
+            }).catch(err => {
+                console.log(err)
+                res.send({ statu: 1, msg: '请稍后再试' })
+            })
+        }
+
+    }).catch(error => {
+        res.send({ status: 1, msg: '请稍后再试' });
+    })
+
+
+})
+
+//删除订单
 router.post('/manage/wo/delete', (req, res) => {
     const { woId } = req.body;
     ProductModel.deleteOne({ _id: woId })
