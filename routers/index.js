@@ -453,7 +453,6 @@ router.get('/manage/wo/monthData', (req, res) => {
                         _id: {
                             date: {
                                 $month: {
-
                                     date: {
                                         '$add': [
                                             new Date(0),
